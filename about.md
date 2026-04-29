@@ -1,11 +1,12 @@
 # Unverified Mods
 
-Make you able to see unverified mods.
+Make you able to see unverified (pending) mods.
 
 See for toggle button in search filters! (where tags select goes)
 
 - featuring *"integrated"* custom ui in geode mods layer
 - ability to see and download unverified mods
+- update system support for unverified mods
 - supports search query and tags
 
 **unverified mods can has some problems since wasnt checked by geode index admins, mod allows see and download them on your own risk**
@@ -13,5 +14,3 @@ See for toggle button in search filters! (where tags select goes)
 mod isn't related to geode team and stuff, u know
 
 uses [api.geode-sdk.org](https://geode-sdk.github.io/server/)/v1
-
-tip: to update installed mod with unverified new version you should delete installed (then geode ui let you download new ver)

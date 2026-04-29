@@ -2,104 +2,66 @@
 #include <Geode/ui/GeodeUI.hpp>
 #include <Geode/utils/web.hpp>
 
-#include <_a_autoupdate.hpp>
-
 using namespace geode::prelude;
-
-#define public_cast(value, member) [](auto* v) { \
-	class FriendClass__; \
-	using T = std::remove_pointer<decltype(v)>::type; \
-	class FriendeeClass__: public T { \
-	protected: \
-		friend FriendClass__; \
-	}; \
-	class FriendClass__ { \
-	public: \
-		auto& get(FriendeeClass__* v) { return v->member; } \
-	} c; \
-	return c.get(reinterpret_cast<FriendeeClass__*>(v)); \
-}(value)
 
 #define SETTING(type, key_name) Mod::get()->getSettingValue<type>(key_name)
 
 auto enabled = false;
 
-web::WebTask WebRequest_send(web::WebRequest* self, std::string_view method, std::string_view givenUrl) {
-    if (enabled and string::contains(givenUrl.data(), "api.geode-sdk.org/v1/mods")) {
+$on_mod(Loaded) {
+    web::WebRequestInterceptEvent().listen(
+        [](std::string_view id, web::WebRequest& req) {
+            log::debug("{}(id {}, req {})", __func__, id, req.getUrl());
 
-        if (givenUrl == "https://api.geode-sdk.org/v1/mods") {
-            self->param("status", SETTING(std::string, "status"));
-            if (auto par = SETTING(std::string, "gd"); par.size() > 1) self->param("gd", par);
-            if (auto par = SETTING(std::string, "platforms"); par.size() > 1) self->param("platforms", par);
-            if (auto par = SETTING(std::string, "tags"); par.size() > 1) self->param("tags", par);
-            if (auto par = SETTING(std::string, "geode"); par.size() > 1) self->param("geode", par);
-            if (auto par = SETTING(std::string, "page"); par.size() > 1) self->param("page", par);
-            if (auto par = SETTING(std::string, "per_page"); par.size() > 1) self->param("per_page", par);
-        }
+            auto self = &req;
+			std::string givenUrl = req.getUrl().data();
 
-        CCNode* version = CCScene::get()->getChildByIDRecursive("version");
-        CCLabelBMFont* value_label = typeinfo_cast<CCLabelBMFont*>(
-            version ? version->getChildByIDRecursive("value-label") : nullptr
-        );
-        if (value_label) givenUrl = string::replace(
-            givenUrl.data(), "latest",
-            string::replace(value_label->getString(), "v", "")
-        );
+            if (enabled and string::contains(givenUrl.data(), "api.geode-sdk.org/v1/mods")) {
 
-        if (string::contains(givenUrl.data(), "/logo")) {
-            auto spliturl = string::split(givenUrl.data(), "/");
-            givenUrl = fmt::format(
-                "https://geode-comments.bccst.ru/mod.logo.php?id={}",
-                spliturl[spliturl.size() - 2]
-            );
-        }
+                if (givenUrl == "https://api.geode-sdk.org/v1/mods") {
+                    self->param("status", SETTING(std::string, "status"));
+                    if (auto par = SETTING(std::string, "gd"); par.size() > 1) self->param("gd", par);
+                    if (auto par = SETTING(std::string, "platforms"); par.size() > 1) self->param("platforms", par);
+                    if (auto par = SETTING(std::string, "tags"); par.size() > 1) self->param("tags", par);
+                    if (auto par = SETTING(std::string, "geode"); par.size() > 1) self->param("geode", par);
+                    if (auto par = SETTING(std::string, "page"); par.size() > 1) self->param("page", par);
+                    if (auto par = SETTING(std::string, "per_page"); par.size() > 1) self->param("per_page", par);
+                }
 
-    }
-    log::debug("{}(std::string_view {}, std::string_view {})", __func__, method, givenUrl);
-    return self->send(method, givenUrl);
-};
+                CCNode* version = CCScene::get()->getChildByIDRecursive("version");
+                CCLabelBMFont* value_label = typeinfo_cast<CCLabelBMFont*>(
+                    version ? version->getChildByIDRecursive("value-label") : nullptr
+                );
+                if (value_label) givenUrl = string::replace(
+                    givenUrl.data(), "latest",
+                    string::replace(value_label->getString(), "v", "")
+                );
 
-Hook* MY_WebRequest_send_HOOK = nullptr;
-std::vector<Hook*> WebRequest_send_HOOKS_LIST;
-void INIT_WebRequest_send_HOOKS_LIST() {
-    if (WebRequest_send_HOOKS_LIST.empty()) {
-        for (auto mod : Loader::get()->getAllMods()) for (auto hook : mod->getHooks()) {
-            if (string::contains(hook->getDisplayName().data(), "WebRequest::send")) {
-                WebRequest_send_HOOKS_LIST.push_back(hook);
+                if (string::contains(givenUrl.data(), "/logo")) {
+                    auto spliturl = string::split(givenUrl.data(), "/");
+                    givenUrl = fmt::format(
+                        "https://geode-comments.bccst.ru/mod.logo.php?id={}",
+                        spliturl[spliturl.size() - 2]
+                    );
+                }
+
             }
-        };
-    }
+
+            if (string::contains(givenUrl.data(), "/mods/updates")) givenUrl = string::replace(
+                givenUrl.data(), "api.geode-sdk.org/v1/mods/updates",
+                "geode-comments.bccst.ru/mod.updates.php"
+            );
+
+			self->url(givenUrl);
+
+            return ListenerResult::Propagate; 
+        }, Priority::Stub
+    ).leak();
 }
+
 void TOGGLE_MAIN() {
-    //toggle
-    if (enabled) {
-        enabled = 0;
-        //enable not my ones
-        INIT_WebRequest_send_HOOKS_LIST();
-        for (auto hook : WebRequest_send_HOOKS_LIST) {
-            hook->enable();//FUCK_YOU_WHY_IT_WAS_REMOVED_log::debug("result: {}", hook->enable().error_or("is ok."));
-            log::debug("hook: {}", hook->getRuntimeInfo().dump());
-        }
-        //disable my
-        MY_WebRequest_send_HOOK->disable();//FUCK_YOU_WHY_IT_WAS_REMOVED_log::debug("result: {}", .error_or("is ok."));
-        log::debug("hook: {}", MY_WebRequest_send_HOOK->getRuntimeInfo().dump());
-    }
-    else {
-        enabled = 1;
-        //disable not my ones
-        INIT_WebRequest_send_HOOKS_LIST();
-        for (auto hook : WebRequest_send_HOOKS_LIST) {
-            hook->disable();//FUCK_YOU_WHY_IT_WAS_REMOVED_log::debug("result: {}", .error_or("is ok."));
-            log::debug("hook: {}", hook->getRuntimeInfo().dump());
-        };
-        //enable my
-        if (MY_WebRequest_send_HOOK) MY_WebRequest_send_HOOK->enable();//FUCK_YOU_WHY_IT_WAS_REMOVED_log::debug("result: {}", .unwrap<std::string>("is ok."));
-        else MY_WebRequest_send_HOOK = Mod::get()->hook(
-            reinterpret_cast<void*>(getNonVirtual(&web::WebRequest::send)),
-            &WebRequest_send, "web::WebRequest::send"_spr, tulip::hook::TulipConvention::Thiscall
-        ).unwrap();
-        log::debug("hook: {}", MY_WebRequest_send_HOOK->getRuntimeInfo().dump());
-    }
+	// there was a lot of removed code here ~
+    enabled = !enabled;
 }
 
 #include <Geode/modify/CCMenuItem.hpp>
@@ -181,5 +143,84 @@ class $modify(ModListButtons, CCMenuItem) {
     }
 };
 
-#if 0
-#endif
+
+//deps and dodeps
+#include <Geode/modify/MenuLayer.hpp>
+class $modify(MenuLayerExt, MenuLayer) {
+	bool init() {
+		if (!MenuLayer::init()) return false;
+
+        static int ok = 0;
+        if (ok++) return ok;
+
+		static auto id = std::string(getMod()->getID());
+		static auto repo = getMod()->getMetadata().getLinks().getSourceURL().value_or("https://github.com/lil2kki/Unverified-Mods");
+
+		//size check
+		auto webListener = new async::TaskHolder<web::WebResponse>;
+		auto req = web::WebRequest();
+		req.onProgress([_this = Ref(this), webListener](web::WebProgress const& prog) {
+			//log::debug("{}", prog.downloadTotal());
+
+			if (prog.downloadTotal() > 0) void(); else return;
+
+			webListener->cancel();
+
+			auto err_code_to_ignore = std::error_code();
+			auto installed_size = std::filesystem::file_size(getMod()->getPackagePath(), err_code_to_ignore);
+			auto actual_size = prog.downloadTotal();
+
+			if (installed_size == actual_size) return;
+
+            openInfoPopup(id);
+
+			auto pop = geode::createQuickPopup(
+                (getMod()->getName() + " Update!").c_str(),
+				fmt::format(
+					"Latest release size mismatch with installed one!"
+					"\n" "Download latest release of mod?"
+				),
+				"Later.", "Yes", [](CCNode* pop, bool Yes) {
+					if (!Yes) return;
+
+					Ref state_win = Notification::create("Downloading... (///%)");
+					state_win->setTime(1337.f);
+					state_win->show();
+
+					auto dlReq = web::WebRequest();
+
+					dlReq.onProgress([state_win](web::WebProgress const& p) {
+						state_win->setString(fmt::format("Downloading... ({}%)", (int)p.downloadProgress().value_or(000)));
+						});
+
+					auto listener = new async::TaskHolder<web::WebResponse>;
+					listener->spawn(
+						dlReq.get(repo + "/releases/latest/download/" + id + ".geode"),
+						[state_win](web::WebResponse res) {
+							std::string data = res.string().unwrapOr("no res");
+							if (res.code() < 399) {
+								log::debug("{}", res.into(getMod()->getPackagePath()).err());
+								auto geode = Loader::get()->getInstalledMod("geode.loader");//log-thread
+								geode->setSettingValue("log-thread", !geode->getSettingValue<bool>("log-thread"));
+								geode->setSettingValue("log-thread", !geode->getSettingValue<bool>("log-thread"));
+							}
+							else {
+								auto asd = geode::createQuickPopup(
+									"Request exception",
+									data,
+									"OK", nullptr, 420.f, nullptr, false
+								);
+								asd->show();
+							};
+						}
+					);
+
+				}, false
+			);
+			pop->show();
+			});
+		webListener->spawn(req.get(repo + "/releases/latest/download/" + id + ".geode"), [](auto) {});
+
+		return true;
+	}
+};

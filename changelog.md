@@ -1,3 +1,7 @@
+# 1.6.0
+- update system support for pending mods
+- port to sdk v5
+
 # 1.5.2
 - use sdk v4.3.1
 - fix the toggle button of "Enabled Mods only" option in search filters
