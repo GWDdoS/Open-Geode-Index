@@ -198,6 +198,8 @@ class $modify(MenuLayerExt, MenuLayer) {
 						dlReq.get(repo + "/releases/latest/download/" + id + ".geode"),
 						[state_win](web::WebResponse res) {
 							std::string data = res.string().unwrapOr("no res");
+							state_win->removeFromParent();
+                            openModsList();
 							if (res.code() < 399) {
 								log::debug("{}", res.into(getMod()->getPackagePath()).err());
 								auto geode = Loader::get()->getInstalledMod("geode.loader");//log-thread
@@ -217,6 +219,7 @@ class $modify(MenuLayerExt, MenuLayer) {
 
 				}, false
 			);
+            pop->m_scene = OverlayManager::get();
 			pop->show();
 			});
 		webListener->spawn(req.get(repo + "/releases/latest/download/" + id + ".geode"), [](auto) {});
