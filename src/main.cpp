@@ -11,7 +11,7 @@ auto enabled = false;
 $on_mod(Loaded) {
     web::WebRequestInterceptEvent().listen(
         [](std::string_view id, web::WebRequest& req) {
-            log::debug("{}(id {}, req {})", __func__, id, req.getUrl());
+            //log::debug("{}(id {}, req {})", __func__, id, req.getUrl());
 
             auto self = &req;
 			std::string givenUrl = req.getUrl().data();
