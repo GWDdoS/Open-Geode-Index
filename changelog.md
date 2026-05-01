@@ -1,3 +1,7 @@
+# 1.7.0
+- remember if unverified mods are enabled (after restart)
+- fix that damn constant crashes from 1.6.0 port to sdk v5
+
 # 1.6.0
 - update system support for pending mods
 - port to sdk v5

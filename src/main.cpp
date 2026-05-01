@@ -6,9 +6,17 @@ using namespace geode::prelude;
 
 #define SETTING(type, key_name) Mod::get()->getSettingValue<type>(key_name)
 
+auto LATEST_MOD_VERSION = std::string("xd");
+
 auto enabled = false;
 
+$on_mod(DataSaved) {
+    Mod::get()->setSavedValue<bool>("enabled", enabled);
+}
 $on_mod(Loaded) {
+    //load state
+    enabled = Mod::get()->getSavedValue<bool>("enabled");
+	//intercept requests
     web::WebRequestInterceptEvent().listen(
         [](std::string_view id, web::WebRequest& req) {
             //log::debug("{}(id {}, req {})", __func__, id, req.getUrl());
@@ -28,13 +36,9 @@ $on_mod(Loaded) {
                     if (auto par = SETTING(std::string, "per_page"); par.size() > 1) self->param("per_page", par);
                 }
 
-                CCNode* version = CCScene::get()->getChildByIDRecursive("version");
-                CCLabelBMFont* value_label = typeinfo_cast<CCLabelBMFont*>(
-                    version ? version->getChildByIDRecursive("value-label") : nullptr
-                );
-                if (value_label) givenUrl = string::replace(
+                givenUrl = string::replace(
                     givenUrl.data(), "latest",
-                    string::replace(value_label->getString(), "v", "")
+                    string::replace(LATEST_MOD_VERSION, "v", "")
                 );
 
                 if (string::contains(givenUrl.data(), "/logo")) {
@@ -64,85 +68,46 @@ void TOGGLE_MAIN() {
     enabled = !enabled;
 }
 
-#include <Geode/modify/CCMenuItem.hpp>
-class $modify(ModListButtons, CCMenuItem) {
-    $override void activate() {
-        CCMenuItem::activate();
-        if (this == nullptr) return;
-        if (this->m_pListener == nullptr) return;
-        if (!typeinfo_cast<CCNode*>(this->m_pListener)) return;
-
-        Ref<CCNode> listener = typeinfo_cast<CCNode*>(this->m_pListener);
-
-        if (listener->getID() == "ModList") {
-
-            if (this->getID() == "sort-button" or this->getID() == "filters-button") {
-
-                findFirstChildRecursive<FLAlertLayer>(CCScene::get(),
-                    [](FLAlertLayer* __this) {
-
-                        findFirstChildRecursive<CCMenuItemSpriteExtra>(
-                            __this, [](CCMenuItemSpriteExtra* item) {
-                                auto image_cast = typeinfo_cast<ButtonSprite*>(item->getNormalImage());
-                                if (!image_cast) return false;
-                                if (image_cast->m_caption.c_str() != std::string("OK")) return false;
-                                auto& org_pfnSelector = item->m_pfnSelector;
-                                auto& org_pListener = item->m_pListener;
-                                if (org_pListener and org_pfnSelector) CCMenuItemExt::assignCallback<CCMenuItem>(item,
-                                    [org_pfnSelector, org_pListener](CCMenuItem* item) {
-                                        (org_pListener->*org_pfnSelector)(item);
-                                        if (auto reload_btn = typeinfo_cast<CCMenuItem*>(
-                                            CCScene::get()->getChildByIDRecursive("reload-button")
-                                        )) reload_btn->activate();
-                                    }
-                                );
-                                return true;
-                            }
-                        );
-
-                        return true;
-                    }
-                );
-
-            }
-
-            if (this->getID() == "filters-button") {
-
-                findFirstChildRecursive<FLAlertLayer>(CCScene::get(),
-                    [](FLAlertLayer* __this) {
-
-                        //is "Search Filters"
-                        /*if (!findFirstChildRecursive<CCLabelBMFont>(
-                            __this, [](CCLabelBMFont* lbl) {
-                                return lbl->getString() == std::string("Search Filters");
-                            })) return false;*/
-
-                        auto toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.6,
-                            [](auto) {
-                                TOGGLE_MAIN();
-                            }
-                        );
-                        toggle->toggle(enabled);
-                        toggle->setPosition(20, 20);
-
-                        __this->m_buttonMenu->addChild(toggle);
-
-                        auto Label = CCLabelBMFont::create("Unverified", "bigFont.fnt");
-                        Label->setScale(0.40f);
-                        Label->setAnchorPoint({ 0.f, 0.5f });
-                        Label->setPosition(32, 20);
-                        __this->m_buttonMenu->addChild(Label);
-
-                        return true;
-                    }
-                );
-
-            }
-
-        };
+#include <Geode/modify/FLAlertLayer.hpp>
+class ModPopup : public FLAlertLayer {};
+class FiltersPopup : public FLAlertLayer {};
+class $modify(PopupCatch, FLAlertLayer) {
+	void setupForModPopup() {
+        if (Ref ver = typeinfo_cast<CCLabelBMFont*>(
+            this->querySelector("mod-stats-container > version > value-label")
+        ))  LATEST_MOD_VERSION = ver->getString();
+	}
+    void setupForFiltersPopup() {
+		//reload on apply
+		addCleanupCallback(
+			[sc = Ref(this->getParent())] {
+				if (auto reload_btn = typeinfo_cast<CCMenuItem*>(sc->querySelector(
+					"right-actions-menu > reload-button")
+				)) reload_btn->activate();
+			}
+		);
+		//toggle
+		auto toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.6,
+			[](auto) {
+				TOGGLE_MAIN();
+			}
+		);
+		toggle->toggle(enabled);
+		toggle->setPosition(20, 20);
+		m_buttonMenu->addChild(toggle);
+		//label
+		auto Label = CCLabelBMFont::create("Unverified", "bigFont.fnt");
+		Label->setScale(0.40f);
+		Label->setAnchorPoint({ 0.f, 0.5f });
+		Label->setPosition(32, 20);
+		m_buttonMenu->addChild(Label);
     }
+	void show() {
+		FLAlertLayer::show();
+        if (typeinfo_cast<FiltersPopup*>(this)) setupForFiltersPopup();
+		if (typeinfo_cast<ModPopup*>(this)) setupForModPopup();
+	}
 };
-
 
 //deps and dodeps
 #include <Geode/modify/MenuLayer.hpp>
