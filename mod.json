@@ -1,78 +1,19 @@
 {
-	"geode": "5.6.1",
+	"geode": "5.7.1",
 	"gd": {
 		"win": "2.2081",
 		"android": "2.2081",
 		"mac": "2.2081",
 		"ios": "2.2081"
 	},
-	"id": "lil2kki.unverified-mods",
-	"name": "Unverified Mods",
-	"version": "v1.7.0",
+	"id": "lil2kki.open-geode-index",
+	"name": "\u30FBOpen Geode Index\u30FB",
+	"version": "v1.0.0",
 	"developer": "lil2kki",
 	"description": "Make you able to see unverified mods.",
 	"links": {
-		"community": "https://discord.com/invite/9e43WMKzhp",
-		"homepage": "https://geode-sdk.org/mods?status=pending&per_page=10&sort=downloads",
-		"source": "https://github.com/lil2kki/Unverified-Mods"
-	},
-	"settings": {
-		"Main prarms": {
-			"type": "title",
-			"name": "Main prarms"
-		},
-		"status": {
-			"name": "status",
-			"description": "Filter by mod version status (rejected is admin only)\nAvailable values : approved, rejected, pending, unlisted",
-			"type": "string",
-			"default": "pending",
-			"one-of": [ "pending", "accepted", "rejected", "unlisted" ]
-		},
-		"Extra prarms": {
-			"type": "title",
-			"name": "Extra prarms"
-		},
-		"gd": {
-			"name": "gd",
-			"description": "Geometry Dash version",
-			"default": "",
-			"filter": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!№;%:?*()_+-=.,/|\"'@#$^&{}[]",
-			"type": "string"
-		},
-		"platforms": {
-			"name": "platforms",
-			"description": "Platforms that mods have to support, comma separated [win,android32,android64,mac,ios]\nExample : win,android32,android64",
-			"default": "",
-			"filter": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!№;%:?*()_+-=.,/|\"'@#$^&{}[]",
-			"type": "string"
-		},
-		"tags": {
-			"name": "tags",
-			"description": "Tags that mods have to have, comma separated. Can only use allowed tags.\nExample : gameplay,enhancement",
-			"default": "",
-			"filter": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!№;%:?*()_+-=.,/|\"'@#$^&{}[]",
-			"type": "string"
-		},
-		"geode": {
-			"name": "geode",
-			"description": "Geode version being used",
-			"default": "",
-			"filter": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!№;%:?*()_+-=.,/|\"'@#$^&{}[]",
-			"type": "string"
-		},
-		"page": {
-			"name": "page",
-			"description": "Page number",
-			"default": "",
-			"filter": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!№;%:?*()_+-=.,/|\"'@#$^&{}[]",
-			"type": "string"
-		},
-		"per_page": {
-			"name": "per_page",
-			"description": "Number of elements to fetch per page",
-			"default": "",
-			"filter": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!№;%:?*()_+-=.,/|\"'@#$^&{}[]",
-			"type": "string"
-		}
+		"homepage": "https://t.me/lil2kki_ch",
+		"community": "https://discord.gg//kXjQ8QEWNU",
+		"source": "https://github.com/lil2kki/Open-Geode-Index"
 	}
 }

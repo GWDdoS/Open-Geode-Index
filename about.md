@@ -1,16 +1,15 @@
-# Unverified Mods
+# Open Geode Index
 
-Make you able to see unverified (pending) mods.
+### [Publish Your Mods Here](https://open-geode-index.bccst.ru)
 
-See for toggle button in search filters! (where tags select goes)
+Welcome to the ALTERNATIVE catalog of mods for Geode, here you can find forbidden or lost mods that are kindly hidden from you. `Enjoy the underground~`
 
-- featuring *"integrated"* custom ui in geode mods layer
-- ability to see and download unverified mods
-- update system support for unverified mods
-- supports search query and tags
+<cr>
 
-**unverified mods can has some problems since wasnt checked by geode index admins, mod allows see and download them on your own risk**
+#### **Mods that wasn't marked as featured are wasn't checked or dangerous, download them on your own risk!**
 
-mod isn't related to geode team and stuff, u know
+</c>
+<cy>
 
-uses [api.geode-sdk.org](https://geode-sdk.github.io/server/)/v1
+#### To toggle `Alt. Index` see Search Filters.
+#### To check updates for our mods you installed, leave `Alt. Index` enabled and restart game.

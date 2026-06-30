@@ -6,9 +6,7 @@ using namespace geode::prelude;
 
 #define SETTING(type, key_name) Mod::get()->getSettingValue<type>(key_name)
 
-auto LATEST_MOD_VERSION = std::string("xd");
-
-auto enabled = false;
+auto enabled = true;
 
 $on_mod(DataSaved) {
     Mod::get()->setSavedValue<bool>("enabled", enabled);
@@ -24,36 +22,10 @@ $on_mod(Loaded) {
             auto self = &req;
 			std::string givenUrl = req.getUrl().data();
 
-            if (enabled and string::contains(givenUrl.data(), "api.geode-sdk.org/v1/mods")) {
-
-                if (givenUrl == "https://api.geode-sdk.org/v1/mods") {
-                    self->param("status", SETTING(std::string, "status"));
-                    if (auto par = SETTING(std::string, "gd"); par.size() > 1) self->param("gd", par);
-                    if (auto par = SETTING(std::string, "platforms"); par.size() > 1) self->param("platforms", par);
-                    if (auto par = SETTING(std::string, "tags"); par.size() > 1) self->param("tags", par);
-                    if (auto par = SETTING(std::string, "geode"); par.size() > 1) self->param("geode", par);
-                    if (auto par = SETTING(std::string, "page"); par.size() > 1) self->param("page", par);
-                    if (auto par = SETTING(std::string, "per_page"); par.size() > 1) self->param("per_page", par);
-                }
-
-                givenUrl = string::replace(
-                    givenUrl.data(), "latest",
-                    string::replace(LATEST_MOD_VERSION, "v", "")
-                );
-
-                if (string::contains(givenUrl.data(), "/logo")) {
-                    auto spliturl = string::split(givenUrl.data(), "/");
-                    givenUrl = fmt::format(
-                        "https://geode-comments.bccst.ru/mod.logo.php?id={}",
-                        spliturl[spliturl.size() - 2]
-                    );
-                }
-
-            }
-
-            if (string::contains(givenUrl.data(), "/mods/updates")) givenUrl = string::replace(
-                givenUrl.data(), "api.geode-sdk.org/v1/mods/updates",
-                "geode-comments.bccst.ru/mod.updates.php"
+            givenUrl = not enabled ? givenUrl : string::replace(
+                givenUrl.data(), 
+				"https://api.geode-sdk.org", 
+				"https://open-geode-index.bccst.ru"
             );
 
 			self->url(givenUrl);
@@ -63,19 +35,11 @@ $on_mod(Loaded) {
     ).leak();
 }
 
-void TOGGLE_MAIN() {
-	// there was a lot of removed code here ~
-    enabled = !enabled;
-}
-
 #include <Geode/modify/FLAlertLayer.hpp>
 class ModPopup : public FLAlertLayer {};
 class FiltersPopup : public FLAlertLayer {};
 class $modify(PopupCatch, FLAlertLayer) {
 	void setupForModPopup() {
-        if (Ref ver = typeinfo_cast<CCLabelBMFont*>(
-            this->querySelector("mod-stats-container > version > value-label")
-        ))  LATEST_MOD_VERSION = ver->getString();
 	}
     void setupForFiltersPopup() {
 		//reload on apply
@@ -87,19 +51,17 @@ class $modify(PopupCatch, FLAlertLayer) {
 			}
 		);
 		//toggle
-		auto toggle = CCMenuItemExt::createTogglerWithStandardSprites(0.6,
-			[](auto) {
-				TOGGLE_MAIN();
-			}
+		auto toggle = CCMenuItemExt::createTogglerWithStandardSprites(
+			0.6, [](auto) { enabled = !enabled; }
 		);
 		toggle->toggle(enabled);
-		toggle->setPosition(20, 20);
+		toggle->setPosition(20, 45);
 		m_buttonMenu->addChild(toggle);
 		//label
-		auto Label = CCLabelBMFont::create("Unverified", "bigFont.fnt");
-		Label->setScale(0.40f);
+		auto Label = CCLabelBMFont::create("Alt. Index", "bigFont.fnt");
+		Label->setScale(0.325f);
 		Label->setAnchorPoint({ 0.f, 0.5f });
-		Label->setPosition(32, 20);
+		Label->setPosition(32, 45);
 		m_buttonMenu->addChild(Label);
     }
 	void show() {
@@ -119,7 +81,7 @@ class $modify(MenuLayerExt, MenuLayer) {
         if (ok++) return ok;
 
 		static auto id = std::string(getMod()->getID());
-		static auto repo = getMod()->getMetadata().getLinks().getSourceURL().value_or("https://github.com/lil2kki/Unverified-Mods");
+		static auto repo = getMod()->getMetadata().getLinks().getSourceURL().value_or("https://github.com/lil2kki/Open-Geode-Index");
 
 		//size check
 		auto webListener = new async::TaskHolder<web::WebResponse>;

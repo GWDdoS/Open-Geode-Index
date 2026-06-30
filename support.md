@@ -1,3 +1,3 @@
-## Support
-- distribute this mod! :>
-- perform some activity in [github repo](https://github.com/user95401/Unverified-Mods)
+## DISTRIBUTE THIS MOD! :>
+## [Publish Your Mods Here](https://open-geode-index.bccst.ru)
+## Perform some activity on [GitHub](https://github.com/lil2kki/Open-Geode-Index)
