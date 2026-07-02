@@ -6,11 +6,22 @@ using namespace geode::prelude;
 
 #define SETTING(type, key_name) Mod::get()->getSettingValue<type>(key_name)
 
+auto myAPI = std::string("open-geode-index.bccst.ru");
+
 auto enabled = true;
 
 $on_mod(DataSaved) {
     Mod::get()->setSavedValue<bool>("enabled", enabled);
 }
+
+void openLinkInBrowserDT(ZStringView url) {
+	geode::utils::web::openLinkInBrowser(string::replace(
+		url.data(),
+		"geode-sdk.org/mods/",
+		(myAPI + "/ui/mod/").data()
+	).data());
+}
+
 $on_mod(Loaded) {
     //load state
     enabled = Mod::get()->getSavedValue<bool>("enabled");
@@ -22,17 +33,30 @@ $on_mod(Loaded) {
             auto self = &req;
 			std::string givenUrl = req.getUrl().data();
 
-            givenUrl = not enabled ? givenUrl : string::replace(
-                givenUrl.data(), 
-				"https://api.geode-sdk.org", 
-				"https://open-geode-index.bccst.ru"
-            );
+			self->header("X-Upstream-Url", givenUrl);
+
+			if (string::contains(givenUrl.data(), "geode-comments.bccst.ru/mod.updates.php")) {
+				givenUrl = "https://" + myAPI + "/v1/mods/updates";
+			}
+
+			auto repl = [&] { givenUrl = string::replace(givenUrl.data(), "api.geode-sdk.org", myAPI); };
+			if (enabled) repl();
+			if (string::contains(givenUrl.data(), "/v1/mods/updates")) repl();
 
 			self->url(givenUrl);
 
             return ListenerResult::Propagate; 
-        }, Priority::Stub
+        }, Priority::Last
     ).leak();
+	//intercept geode mods links
+	Mod::get()->hook(
+		reinterpret_cast<void*>(geode::addresser::getNonVirtual(
+			geode::modifier::Resolve<ZStringView>::func(&geode::utils::web::openLinkInBrowser)
+		)),
+		&openLinkInBrowserDT,
+		"geode::utils::web::openLinkInBrowser",
+		tulip::hook::TulipConvention::Stdcall
+	).unwrap();
 }
 
 #include <Geode/modify/FLAlertLayer.hpp>
