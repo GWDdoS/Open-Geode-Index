@@ -13,4 +13,5 @@ Welcome to the ALTERNATIVE catalog of mods for Geode, here you can find forbidde
 - Download latest version of mod: https://github.com/lil2kki/Open-Geode-Index/releases/latest/download/lil2kki.open-geode-index.geode
 - Open Geode Loader Settings
 - Click the "Install From File" button
-- Select download file and confirm
+- Select downloaded file and confirm
+<img width="1315" height="737" alt="image" src="https://github.com/user-attachments/assets/dc4987df-b2fa-430f-8610-66bf4ce64862" />
