@@ -41,7 +41,7 @@ $on_mod(Loaded) {
 
 			auto repl = [&] { givenUrl = string::replace(givenUrl.data(), "api.geode-sdk.org", myAPI); };
 			if (enabled) repl();
-			if (string::contains(givenUrl.data(), "/v1/mods/updates")) repl();
+			if (string::contains(givenUrl.data(), "/v1/mods/")) repl();
 
 			self->url(givenUrl);
 
